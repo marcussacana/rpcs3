@@ -30,6 +30,21 @@ namespace vk
 
 	void pipe_compiler::operator()()
 	{
+		
+		const u32 total_logical = utils::get_thread_count();
+
+		if (total_logical >= 16)
+		{
+			u32 start = total_logical / 2;
+			u32 end   = total_logical - 1;
+
+			u64 mask = 0;
+			for (u32 i = start; i <= end; ++i)
+				mask |= (1ull << i);
+
+			thread_ctrl::set_thread_affinity_mask(mask);
+		}
+
 		while (thread_ctrl::state() != thread_state::aborting)
 		{
 			for (auto&& job : m_work_queue.pop_all())
